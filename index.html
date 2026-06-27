@@ -111,11 +111,16 @@ function sendOrder() {
 
     var waUrl = "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
 
-    if (navigator.share) {
-        navigator.share({ title: 'WIFIPRO Internet', text: msg, url: waUrl })
-            .catch(function(){ window.location.href = waUrl; });
-    } else {
-        window.location.href = waUrl;
+    var chromeAppUrl = "android-app://com.android.chrome/https/wa.me/" + phone + "?text=" + encodeURIComponent(msg);
+
+    var w = window.open(chromeAppUrl, "_blank");
+    if (!w || w.closed) {
+        if (navigator.share) {
+            navigator.share({ title: 'WIFIPRO Internet', text: msg, url: waUrl })
+                .catch(function(){ window.location.href = waUrl; });
+        } else {
+            window.location.href = waUrl;
+        }
     }
 
     setTimeout(function() {
