@@ -109,26 +109,22 @@ function sendOrder() {
     btn.disabled = true;
     btn.textContent = "Opening WhatsApp...";
 
-    var intentUrl = "intent://wa.me/" + phone + "?text=" + encodeURIComponent(msg) + "#Intent;scheme=https;package=com.android.chrome;end";
-    var fallbackUrl = "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
+    var waUrl = "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
 
-    var w = window.open(intentUrl, "_blank");
+    if (navigator.share) {
+        navigator.share({ title: 'WIFIPRO Internet', text: msg, url: waUrl })
+            .catch(function(){ window.location.href = waUrl; });
+    } else {
+        window.location.href = waUrl;
+    }
 
-    var timer = setTimeout(function() {
-        if (navigator.share) {
-            navigator.share({ title: 'WIFIPRO Internet', text: msg, url: fallbackUrl })
-                .catch(function(){ window.location.href = fallbackUrl; });
-        } else {
-            window.location.href = fallbackUrl;
-        }
+    setTimeout(function() {
         btn.disabled = false;
         btn.textContent = "Confirm & Send to WhatsApp";
-    }, 1200);
+    }, 2000);
 
     document.addEventListener("visibilitychange", function handler() {
-        if (document.hidden) {
-            clearTimeout(timer);
-        } else {
+        if (!document.hidden) {
             btn.disabled = false;
             btn.textContent = "Confirm & Send to WhatsApp";
         }
