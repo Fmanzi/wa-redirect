@@ -104,32 +104,35 @@ function copyText(t) {
 
 function sendOrder() {
     var msg = getMessage();
+    copyText(msg);
     var btn = document.getElementById("send-btn");
     btn.disabled = true;
     btn.textContent = "Opening WhatsApp...";
 
-    var url = "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
-    copyText(msg);
+    var intentUrl = "intent://wa.me/" + phone + "?text=" + encodeURIComponent(msg) + "#Intent;scheme=https;package=com.android.chrome;end";
+    var fallbackUrl = "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
 
-    if (navigator.share) {
-        navigator.share({ title: 'WIFIPRO Internet', text: msg, url: url })
-            .catch(function(){ openWa(url, msg); });
-    } else {
-        openWa(url, msg);
-    }
-}
+    var w = window.open(intentUrl, "_blank");
 
-function openWa(url, msg) {
-    var intent = "intent://wa.me/" + phone + "?text=" + encodeURIComponent(msg) + "#Intent;scheme=https;package=com.android.chrome;end";
-    var w = window.open(intent, "_blank");
-    if (!w || w.closed) {
-        window.location.href = url;
-    }
-    setTimeout(function() {
-        var btn = document.getElementById("send-btn");
+    var timer = setTimeout(function() {
+        if (navigator.share) {
+            navigator.share({ title: 'WIFIPRO Internet', text: msg, url: fallbackUrl })
+                .catch(function(){ window.location.href = fallbackUrl; });
+        } else {
+            window.location.href = fallbackUrl;
+        }
         btn.disabled = false;
         btn.textContent = "Confirm & Send to WhatsApp";
-    }, 3000);
+    }, 1200);
+
+    document.addEventListener("visibilitychange", function handler() {
+        if (document.hidden) {
+            clearTimeout(timer);
+        } else {
+            btn.disabled = false;
+            btn.textContent = "Confirm & Send to WhatsApp";
+        }
+    });
 }
 
 function copyMsg() {
