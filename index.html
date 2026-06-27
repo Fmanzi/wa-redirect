@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Confirm Order - WIFIPRO</title>
+<title>WIFIPRO - Open in Chrome</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f172a;color:#e2e8f0;display:flex;min-height:100vh}
@@ -17,83 +17,62 @@ h1{font-size:20px;font-weight:800;color:#fff;margin-bottom:4px}
 .row:last-child{border-bottom:none}
 .label{color:#94a3b8}
 .value{color:#f1f5f9;font-weight:600}
-.value.price{color:#25d366;font-size:18px}
-.btn{display:block;width:100%;background:linear-gradient(135deg,#25d366,#128C7E);color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;text-decoration:none;transition:opacity .2s}
+.btn{display:block;width:100%;background:linear-gradient(135deg,#25d366,#128C7E);color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;text-decoration:none;transition:opacity .2s;margin-bottom:8px}
 .btn:hover{opacity:.9}
 .btn:disabled{opacity:.5;cursor:default}
 .btn-outline{background:transparent;border:1px solid #334155;color:#e2e8f0;margin-top:8px}
-.info{font-size:12px;color:#94a3b8;margin-top:10px;line-height:1.5}
-.spinner{margin:20px auto;width:40px;height:40px;border:4px solid #334155;border-top-color:#25d366;border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.share-icon{display:inline-block;margin-right:6px}
+.info{font-size:12px;color:#94a3b8;line-height:1.5}
+#debug{font-size:11px;color:#f59e0b;background:#1e293b;padding:10px;border-radius:8px;margin-top:12px;word-break:break-all;text-align:left;display:none}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="card" id="loading-card">
-    <div class="spinner"></div>
-    <h1>Loading your order...</h1>
-  </div>
-
-  <div class="card" id="confirm-card" style="display:none">
+  <div class="card">
     <div class="logo">W</div>
-    <h1>Your Order</h1>
-    <p class="sub">Tap the button below to continue</p>
-
+    <h1>WIFIPRO</h1>
+    <p class="sub" id="status">Loading your order...</p>
     <div class="summary">
-      <div class="row">
-        <span class="label">Package</span>
-        <span class="value" id="display-pkg">-</span>
-      </div>
-      <div class="row">
-        <span class="label">Price</span>
-        <span class="value price" id="display-price">-</span>
-      </div>
-      <div class="row">
-        <span class="label">Your Name</span>
-        <span class="value" id="display-name">-</span>
-      </div>
+      <div class="row"><span class="label">Package</span><span class="value" id="display-pkg">-</span></div>
+      <div class="row"><span class="label">Price</span><span class="value" id="display-price">-</span></div>
+      <div class="row"><span class="label">Name</span><span class="value" id="display-name">-</span></div>
     </div>
-
-    <button class="btn" id="send-btn" onclick="sendOrder()">
-      Open in Chrome
-    </button>
-    <p class="info">1. Tap the button above</p>
-    <p class="info">2. Select <strong>Chrome</strong> from the list</p>
-    <p class="info">3. Chrome opens WhatsApp for you</p>
-    <button class="btn btn-outline" onclick="copyMsg()">Copy Message Instead</button>
-    <p class="info" id="copy-info" style="display:none">Message copied ✓</p>
+    <button class="btn" id="share-btn" onclick="tryShare()">Open in Chrome</button>
+    <button class="btn btn-outline" onclick="showManual()">Show manual instructions</button>
+    <div id="manual" style="display:none">
+      <p class="info" style="margin-top:12px">1. Open Chrome</p>
+      <p class="info">2. Type <strong style="color:#f1f5f9">http://192.168.88.1</strong></p>
+      <p class="info">3. Tap "Open WhatsApp Now"</p>
+    </div>
+    <div id="debug"></div>
   </div>
 </div>
 
 <script>
 var phone = "254728580415";
-var pkg = "";
-var price = "";
+var pkg = "Internet Package";
+var price = "KES 0";
 var name = "";
 
-function getParam(p) {
-    return new URL(window.location.href).searchParams.get(p) || "";
+(function(){
+    var p = new URL(window.location.href).searchParams;
+    phone = p.get("phone") || phone;
+    pkg = p.get("pkg") || pkg;
+    price = p.get("price") || price;
+    name = p.get("name") || "";
+    document.getElementById("display-pkg").textContent = pkg;
+    document.getElementById("display-price").textContent = price;
+    document.getElementById("display-name").textContent = name || "(not provided)";
+    document.getElementById("status").textContent = "Your order is ready";
+})();
+
+function getMsg() {
+    return "Hi WIFIPRO, I'd like to buy " + pkg + (name ? ". My name is " + name + "." : ".");
 }
 
-phone = getParam("phone") || phone;
-pkg = getParam("pkg") || "Internet Package";
-price = getParam("price") || "KES 0";
-name = getParam("name") || "";
-
-document.getElementById("display-pkg").textContent = pkg;
-document.getElementById("display-price").textContent = price;
-document.getElementById("display-name").textContent = name || "(not provided)";
-
-setTimeout(function() {
-    document.getElementById("loading-card").style.display = "none";
-    document.getElementById("confirm-card").style.display = "block";
-}, 400);
-
-function getMessage() {
-    var msg = "Hi WIFIPRO, I'd like to buy " + pkg + ".";
-    if (name) msg += " My name is " + name + ".";
-    return msg;
+function dbg(t) {
+    var d = document.getElementById("debug");
+    d.style.display = "block";
+    d.innerHTML += "<div>" + t + "</div>";
 }
 
 function copyText(t) {
@@ -104,28 +83,37 @@ function copyText(t) {
     document.execCommand('copy'); document.body.removeChild(ta);
 }
 
-function sendOrder() {
-    var msg = getMessage();
-    copyText(msg);
-    var btn = document.getElementById("send-btn");
-    btn.disabled = true;
-    btn.textContent = "Opening...";
+function tryShare() {
+    var msg = getMsg();
     var waUrl = "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
+    copyText(msg);
+
+    dbg("navigator.share available: " + (typeof navigator.share));
+
     if (navigator.share) {
+        var btn = document.getElementById("share-btn");
+        btn.disabled = true;
+        btn.textContent = "Opening...";
+
         navigator.share({ title: 'WIFIPRO Internet', text: msg, url: waUrl })
-            .catch(function(){ window.location.href = waUrl; });
+            .then(function() {
+                dbg("Share succeeded");
+                btn.textContent = "Done!";
+            })
+            .catch(function(err) {
+                dbg("Share error: " + err.toString() + " | name: " + err.name);
+                btn.disabled = false;
+                btn.textContent = "Try again";
+            });
     } else {
-        window.location.href = waUrl;
+        dbg("navigator.share NOT available on this page");
+        showManual();
     }
-    setTimeout(function() {
-        btn.disabled = false;
-        btn.textContent = "Open in Chrome";
-    }, 2000);
 }
 
-function copyMsg() {
-    copyText(getMessage());
-    document.getElementById("copy-info").style.display = "block";
+function showManual() {
+    document.getElementById("manual").style.display = "block";
+    copyText("http://192.168.88.1");
 }
 </script>
 </body>
