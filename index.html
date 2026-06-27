@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opening WhatsApp...</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f172a;color:#e2e8f0;display:flex;min-height:100vh}
+.wrap{max-width:480px;margin:auto;padding:20px;width:100%;text-align:center}
+.card{background:#1e293b;border-radius:14px;padding:20px;margin-bottom:16px}
+h1{font-size:22px;font-weight:800;color:#25d366;margin-bottom:6px}
+h2{font-size:16px;font-weight:700;margin-bottom:14px;color:#f1f5f9}
+.phone{font-size:18px;color:#25d366;letter-spacing:0.5px;padding:12px;background:#0f172a;border-radius:10px;margin-bottom:12px;border:1px solid #334155}
+.msg{font-size:13px;color:#cbd5e1;padding:12px;background:#0f172a;border-radius:10px;margin-bottom:16px;line-height:1.4;word-break:break-word;border:1px solid #334155;text-align:left}
+.btn{display:block;width:100%;background:linear-gradient(135deg,#25d366,#128C7E);color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:8px;text-decoration:none}
+.btn:hover{opacity:.9}
+.btn-outline{background:transparent;border:1px solid #334155;color:#e2e8f0}
+.info{font-size:12px;color:#94a3b8;margin-top:8px}
+.spinner{margin:20px auto;width:40px;height:40px;border:4px solid #334155;border-top-color:#25d366;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card" id="loading-card">
+    <div class="spinner"></div>
+    <h1>Opening WhatsApp...</h1>
+    <p class="info">If nothing happens, use the options below</p>
+  </div>
+
+  <div class="card" id="actions-card" style="display:none">
+    <h2>Open WhatsApp to send your order</h2>
+    <p class="phone" id="phone-display">254728580415</p>
+    <p class="msg" id="msg-display"></p>
+    <button class="btn" id="share-btn" onclick="shareWhatsApp()">Share via WhatsApp</button>
+    <a class="btn" id="chrome-link" onclick="openInChrome()">Open in Chrome → WhatsApp</a>
+    <button class="btn btn-outline" onclick="copyMsg()">Copy Message</button>
+    <p class="info" id="copy-info" style="display:none">Copied to clipboard ✓</p>
+    <p class="info">Or open WhatsApp, search <strong>254728580415</strong>, and paste the message</p>
+  </div>
+</div>
+
+<script>
+var phone = "254728580415";
+var text = "Hi WIFIPRO, I'd like to order internet.";
+
+function getParam(name) {
+    var url = new URL(window.location.href);
+    return url.searchParams.get(name) || "";
+}
+
+phone = getParam("phone") || phone;
+text = getParam("text") || text;
+
+document.getElementById("phone-display").textContent = phone;
+document.getElementById("msg-display").textContent = text;
+
+function copyText(t) {
+    if (navigator.clipboard) navigator.clipboard.writeText(t);
+    var ta = document.createElement('textarea');
+    ta.value = t; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0,99999);
+    document.execCommand('copy'); document.body.removeChild(ta);
+}
+
+function shareWhatsApp() {
+    var url = "https://wa.me/" + phone + "?text=" + encodeURIComponent(text);
+    if (navigator.share) {
+        navigator.share({ title: 'WIFIPRO Internet', text: text, url: url }).catch(function(){});
+    }
+}
+
+function openInChrome() {
+    var intent = "intent://wa.me/" + phone + "?text=" + encodeURIComponent(text) + "#Intent;scheme=https;package=com.android.chrome;end";
+    var w = window.open(intent, "_blank");
+    if (!w || w.closed) {
+        window.location.href = "https://wa.me/" + phone + "?text=" + encodeURIComponent(text);
+    }
+}
+
+function copyMsg() {
+    copyText(text);
+    document.getElementById("copy-info").style.display = "block";
+}
+
+setTimeout(function() {
+    document.getElementById("loading-card").style.display = "none";
+    document.getElementById("actions-card").style.display = "block";
+
+    var url = "https://wa.me/" + phone + "?text=" + encodeURIComponent(text);
+    if (navigator.share) {
+        navigator.share({ title: 'WIFIPRO Internet', text: text, url: url }).catch(function(){});
+    }
+}, 500);
+</script>
+</body>
+</html>
